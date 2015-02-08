@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf8"/>
+<title>24 Points</title>
+<script src="24points.js"></script>
+<script src="http://nbdd0121.github.io/jquery/jquery.js"></script>
+<script>
+function set24PointsNumber(num) {
+	var panel = $("#24points_input_panel");
+	panel.html('');
+	for(var i=0;i<num;i++){
+		panel.append($("<input>").val(Math.floor(Math.random()*10)+1)).append("<br/>");
+	}
+}
+function getNumbers(){
+	var inputs = $("#24points_input_panel input");
+	var arr = new Array(inputs.length);
+	for(var i=0;i<arr.length;i++){
+		arr[i]=parseFloat($(inputs[i]).val());
+	}
+	return arr;
+}
+function calcAndDisplay() {
+	try{
+		var results = calc(getNumbers(), parseFloat($("#24points_sum").val()));
+	}catch(e){
+		console.log(e);
+		alert('Internal errors: Please report data to author, thanks.');
+	}
+	if (results.length === 0) {
+		$("#24points_result").text("No answer");
+	} else {
+		$("#24points_result").html(results.join("<br/>"));
+	}
+}
+$(function(){
+	$("#24points_total_num").change(function(){
+		set24PointsNumber(parseInt($("#24points_total_num").val()));
+	});
+	$("#24points_calc").click(function(){
+		calcAndDisplay();
+	});
+	set24PointsNumber(4);
+});
+</script>
+</head>
+<body>
+	Number of inputs: <input id="24points_total_num" value="4"></input>
+	<div id="24points_input_panel"></div>
+	Target number: <input id="24points_sum" value="24"></input>
+	<button id="24points_calc">Calc</button>
+	<div id="24points_result"></div>
+</body>
+</html>
