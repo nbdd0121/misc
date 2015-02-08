@@ -1,6 +1,8 @@
 function Constant(value) {
-	this.type = 'Constant';
-	this.value = value;
+	var ret = Object(value);
+	ret.type = 'Constant';
+	ret.value = value;
+	return ret;
 }
 
 function Node(value, l, r, op) {
@@ -45,18 +47,23 @@ function normalize(node) {
 		case 'Constant':
 			return node;
 		case '-':
-			return Node(node.value, normalize(node[0]), {
+			return normalize(Node(node.value, node[0], {
 				type: 'neg',
-				0: normalize(node[1])
-			}, '+');
+				0: normalize(node[1]),
+				length: 1
+			}, '+'));
 		case '/':
-			return Node(node.value, normalize(node[0]), {
+			return normalize(Node(node.value, node[0], {
 				type: 'rec',
-				0: normalize(node[1])
-			}, '*');
+				0: normalize(node[1]),
+				length: 1
+			}, '*'));
 		case '+':
 		case '*':
 			return reorder(flatten(node));
+		case 'neg':
+		case 'rec':
+			return node;
 		default:
 			throw 'Assertion Failure';
 	}
@@ -140,8 +147,9 @@ function unique(arr) {
 function calc(arr, target) {
 	var result = [];
 	for (var i = 0; i < arr.length; i++) {
-		arr[i] = new Constant(arr[i]);
+		arr[i] = Constant(arr[i]);
 	}
 	enumeration(result, arr, target);
+
 	return unique(result.map(normalize).map(codegen));
 }
