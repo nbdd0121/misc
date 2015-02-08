@@ -38,6 +38,9 @@ $(function(){
 	$("#24points_total_num").change(function(){
 		set24PointsNumber(parseInt($("#24points_total_num").val()));
 	});
+	$("#24points_random").click(function(){
+		$("#24points_total_num").change();
+	});
 	$("#24points_calc").click(function(){
 		calcAndDisplay();
 	});
@@ -46,7 +49,7 @@ $(function(){
 </script>
 </head>
 <body>
-	Number of inputs: <input id="24points_total_num" value="4"></input>
+	Number of inputs: <input id="24points_total_num" value="4"></input> <button id="24points_random">Random</button>
 	<div id="24points_input_panel"></div>
 	Target number: <input id="24points_sum" value="24"></input>
 	<button id="24points_calc">Calc</button>
