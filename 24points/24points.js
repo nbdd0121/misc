@@ -33,8 +33,10 @@ function reorder(node) {
 	node.sort(function(a, b) {
 		var as = codegen(a),
 			bs = codegen(b);
-		if (as[0] === '/' || as[0] === '-') return 1;
-		if (bs[0] === '/' || bs[0] === '-') return -1;
+		var aNeg = as[0] === '/' || as[0] === '-';
+		var bNeg = bs[0] === '/' || bs[0] === '-';
+		if (aNeg && !bNeg) return 1;
+		if (bNeg && !aNeg) return -1;
 		if (as.length !== bs.length)
 			return as.length - bs.length;
 		return as < bs ? -1 : 1;
