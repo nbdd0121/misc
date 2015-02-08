@@ -14,6 +14,13 @@ function Node(value, l, r, op) {
 	return ret;
 }
 
+function UnaryNode(operand, op) {
+	var ret = [];
+	ret.type = op;
+	ret[0] = operand;
+	return ret;
+}
+
 /* Flatten a + node or * node */
 function flatten(node) {
 	var arr = [];
@@ -27,6 +34,20 @@ function flatten(node) {
 	}
 	arr.type = node.type;
 	return arr;
+}
+
+function extractNeg(node, add, neg) {
+	var operand = node[0];
+	if (operand.type !== add) return node;
+	for (var i = 0; i < operand.length; i++) {
+		if (operand[i].type === neg) {
+			operand[i] = operand[i][0];
+		} else {
+			operand[i] = UnaryNode(operand[i], neg);
+		}
+	}
+	console.log(operand);
+	return operand;
 }
 
 function reorder(node) {
@@ -49,23 +70,16 @@ function normalize(node) {
 		case 'Constant':
 			return node;
 		case '-':
-			return normalize(Node(node.value, node[0], {
-				type: 'neg',
-				0: normalize(node[1]),
-				length: 1
-			}, '+'));
+			return normalize(Node(node.value, node[0], UnaryNode(normalize(node[1]), 'neg'), '+'));
 		case '/':
-			return normalize(Node(node.value, node[0], {
-				type: 'rec',
-				0: normalize(node[1]),
-				length: 1
-			}, '*'));
+			return normalize(Node(node.value, node[0], UnaryNode(normalize(node[1]), 'rec'), '*'));
 		case '+':
 		case '*':
 			return reorder(flatten(node));
 		case 'neg':
+			return extractNeg(node, '+', 'neg');
 		case 'rec':
-			return node;
+			return extractNeg(node, '*', 'rec');
 		default:
 			throw 'Assertion Failure';
 	}
