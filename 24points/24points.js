@@ -128,13 +128,16 @@ function enumeration(result, arr, target) {
 		}
 		return;
 	}
-	for (var i = 0; i < arr.length - 1; i++) {
-		var clone = arr.slice();
-		clone.splice(i, 1);
-		for (var j = i; j < clone.length; j++) {
-			reduction(result, arr[i], arr[j + 1], clone, j, target);
-			clone[j] = arr[j + 1];
+	var clone = arr.slice(1);
+	var length = arr.length;
+	for (var i = 0; i < length; i++) {
+		var a = arr[i];
+		for (var j = i; j < length - 1; j++) {
+			var b = arr[j + 1];
+			reduction(result, a, b, clone, j, target);
+			clone[j] = b;
 		}
+		clone[i] = a;
 	}
 }
 
