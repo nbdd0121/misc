@@ -5,20 +5,18 @@ function Constant(value) {
 	return ret;
 }
 
-function Node(value, l, r, op) {
-	var ret = [];
-	ret.type = op;
-	ret[0] = l;
-	ret[1] = r;
-	ret.value = value;
-	return ret;
+function Node(value, op, l, r) {
+	return MakeNode(value, op, [l, r]);
 }
 
-function UnaryNode(operand, op) {
-	var ret = [];
-	ret.type = op;
-	ret[0] = operand;
-	return ret;
+function UnaryNode(value, op, operand) {
+	return MakeNode(value, op, [operand]);
+}
+
+function MakeNode(value, op, arr) {
+	arr.type = op;
+	arr.value = value;
+	return arr;
 }
 
 /* Flatten a + node or * node */
@@ -32,22 +30,49 @@ function flatten(node) {
 			Array.prototype.push.apply(arr, n);
 		}
 	}
-	arr.type = node.type;
-	return arr;
+	return MakeNode(node.value, node.type, arr);
 }
 
-function extractNeg(node, add, neg) {
+function extractNeg(node) {
 	var operand = node[0];
-	if (operand.type !== add) return node;
+	if (operand.type !== '+') {
+		if (operand.value === 0) return operand;
+		return node;
+	}
+	var arr = [];
 	for (var i = 0; i < operand.length; i++) {
-		if (operand[i].type === neg) {
-			operand[i] = operand[i][0];
+		if (operand[i].type === 'neg') {
+			arr.push(operand[i][0]);
 		} else {
-			operand[i] = UnaryNode(operand[i], neg);
+			if (operand[i].value === 0) {
+				arr.push(operand[i]);
+			} else {
+				arr.push(UnaryNode(-operand[i].value, 'neg', operand[i]));
+			}
 		}
 	}
-	console.log(operand);
-	return operand;
+	return MakeNode(node.value, '+', arr);
+}
+
+function extractRec(node) {
+	var operand = node[0];
+	if (operand.type !== '*') {
+		if (operand.value === 1) return operand;
+		return node;
+	}
+	var arr = [];
+	for (var i = 0; i < operand.length; i++) {
+		if (operand[i].type === 'rec') {
+			arr.push(operand[i][0]);
+		} else {
+			if (operand[i].value === 1) {
+				arr.push(operand[i]);
+			} else {
+				arr.push(UnaryNode(1 / operand[i].value, 'rec', operand[i]));
+			}
+		}
+	}
+	return MakeNode(node.value, '*', arr);
 }
 
 function reorder(node) {
@@ -70,28 +95,28 @@ function normalize(node) {
 		case 'Constant':
 			return node;
 		case '-':
-			return normalize(Node(node.value, node[0], UnaryNode(normalize(node[1]), 'neg'), '+'));
+			return normalize(Node(node.value, '+', node[0], UnaryNode(-node[1].value, 'neg', normalize(node[1]))));
 		case '/':
-			return normalize(Node(node.value, node[0], UnaryNode(normalize(node[1]), 'rec'), '*'));
+			return normalize(Node(node.value, '*', node[0], UnaryNode(1 / node[1].value, 'rec', normalize(node[1]))));
 		case '+':
 		case '*':
 			return reorder(flatten(node));
 		case 'neg':
-			return extractNeg(node, '+', 'neg');
+			return extractNeg(node);
 		case 'rec':
-			return extractNeg(node, '*', 'rec');
+			return extractRec(node);
 		default:
 			throw 'Assertion Failure';
 	}
 }
 
 function reduction(result, a, b, arr, i, target) {
-	arr[i] = Node(a.value + b.value, a, b, '+'), enumeration(result, arr, target);
-	arr[i] = Node(a.value - b.value, a, b, '-'), enumeration(result, arr, target);
-	arr[i] = Node(b.value - a.value, b, a, '-'), enumeration(result, arr, target);
-	arr[i] = Node(a.value * b.value, a, b, '*'), enumeration(result, arr, target);
-	arr[i] = Node(a.value / b.value, a, b, '/'), enumeration(result, arr, target);
-	arr[i] = Node(b.value / a.value, b, a, '/'), enumeration(result, arr, target);
+	arr[i] = Node(a.value + b.value, '+', a, b), enumeration(result, arr, target);
+	arr[i] = Node(a.value - b.value, '-', a, b), enumeration(result, arr, target);
+	arr[i] = Node(b.value - a.value, '-', b, a), enumeration(result, arr, target);
+	arr[i] = Node(a.value * b.value, '*', a, b), enumeration(result, arr, target);
+	arr[i] = Node(a.value / b.value, '/', a, b), enumeration(result, arr, target);
+	arr[i] = Node(b.value / a.value, '/', b, a), enumeration(result, arr, target);
 }
 
 function enumeration(result, arr, target) {
