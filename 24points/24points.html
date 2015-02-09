@@ -22,14 +22,36 @@ function getNumbers(){
 	return arr;
 }
 function calcAndDisplay() {
-	try{
-		var results = calc(getNumbers(), parseFloat($("#24points_sum").val()));
-	}catch(e){
+	var inputs = getNumbers();
+	var target = parseFloat($("#24points_sum").val());
+	try {
+		var results = calc(inputs, target);
+	} catch (e) {
 		console.log(e);
 		alert('Internal errors: Please report data to author, thanks.');
 	}
 	if (results.length === 0) {
-		$("#24points_result").text("No answer");
+		if (target === 24) {
+			results = calc(inputs, 4);
+			if (results.length === 0) {
+				if (inputs.length !== 4) {
+					$("#24points_result").text("No answer");
+				} else {
+					var easterEgg = '(';
+					for (var i = 0; i < inputs.length; i++) {
+						if (i != 0) easterEgg += '+';
+						easterEgg += inputs[i] !== 0 ? '(d' + inputs[i] + '/dx)!' : '0!';
+					}
+					$("#24points_result").html(easterEgg + ')!<br/>Differentiation is our best friend. lol.');
+				}
+			} else {
+				$("#24points_result").html(results.map(function(a) {
+					return '(' + a + ')!<br/>';
+				}).join('') + "I'm kidding you. lol.");
+			}
+		} else {
+			$("#24points_result").text("No answer");
+		}
 	} else {
 		$("#24points_result").html(results.join("<br/>"));
 	}

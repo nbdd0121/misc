@@ -57,7 +57,7 @@ function extractNeg(node) {
 function extractRec(node) {
 	var operand = node[0];
 	if (operand.type !== '*') {
-		if (operand.value === 1) return operand;
+		if (operand.value === 1 || operand.value === -1) return operand;
 		return node;
 	}
 	var arr = [];
@@ -65,7 +65,7 @@ function extractRec(node) {
 		if (operand[i].type === 'rec') {
 			arr.push(operand[i][0]);
 		} else {
-			if (operand[i].value === 1) {
+			if (operand[i].value === 1 || operand[i].value === -1) {
 				arr.push(operand[i]);
 			} else {
 				arr.push(UnaryNode(1 / operand[i].value, 'rec', operand[i]));
@@ -187,10 +187,7 @@ function unique(arr) {
 
 function calc(arr, target) {
 	var result = [];
-	for (var i = 0; i < arr.length; i++) {
-		arr[i] = Constant(arr[i]);
-	}
+	arr = arr.map(Constant);
 	enumeration(result, arr, target);
-
 	return unique(result.map(normalize).map(codegen));
 }
