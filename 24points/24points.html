@@ -13,17 +13,25 @@ function set24PointsNumber(num) {
 		panel.append($("<input>").val(Math.floor(Math.random()*10)+1)).append("<br/>");
 	}
 }
-function getNumbers(){
+function getNumbers() {
 	var inputs = $("#24points_input_panel input");
 	var arr = new Array(inputs.length);
-	for(var i=0;i<arr.length;i++){
-		arr[i]=parseFloat($(inputs[i]).val());
+	for (var i = 0; i < arr.length; i++) {
+		var val = parseFloat($(inputs[i]).val());
+		if (isNaN(val)) {
+			return null;
+		}
+		arr[i] = val;
 	}
 	return arr;
 }
 function calcAndDisplay() {
 	var inputs = getNumbers();
 	var target = parseFloat($("#24points_sum").val());
+	if (isNaN(target) || !inputs) {
+		$("#24points_result").text("I failed you Math exam because you cannot distiguish numbers from not-a-number. I don't even bother calculating the results.");
+		return;
+	}
 	try {
 		var results = calc(inputs, target);
 	} catch (e) {
