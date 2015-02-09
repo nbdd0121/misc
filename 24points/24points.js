@@ -1,3 +1,5 @@
+var episilon = 1e-8;
+
 function Constant(value) {
 	var ret = Object(value);
 	ret.type = 'Constant';
@@ -121,7 +123,7 @@ function reduction(result, a, b, arr, i, target) {
 
 function enumeration(result, arr, target) {
 	if (arr.length == 1) {
-		if (arr[0].value == target) {
+		if (Math.abs(arr[0].value - target) < episilon) {
 			result.push(arr[0]);
 		}
 		return;
